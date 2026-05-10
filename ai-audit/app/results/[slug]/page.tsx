@@ -9,7 +9,7 @@ import CredexCTA from "@/components/results/CredexCTA";
 import LeadCapture from "@/components/results/LeadCapture";
 
 interface Props {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 async function getAudit(slug: string): Promise<AuditResult | null> {
@@ -22,31 +22,33 @@ async function getAudit(slug: string): Promise<AuditResult | null> {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const audit = await getAudit(params.slug);
+  const { slug } = await params;
+  const audit = await getAudit(slug);
   if (!audit) return {};
 
   const savings = audit.totalMonthlySavings;
   const title = savings > 0
-    ? `AI Spend Audit — $${savings}/mo savings found`
+    ? AI Spend Audit — $${savings}/mo savings found
     : "AI Spend Audit — Your stack looks optimised";
 
   return {
     title,
     openGraph: {
       title,
-      description: `Potential annual savings: $${audit.totalAnnualSavings}. See the full breakdown.`,
-      url: `${process.env.NEXT_PUBLIC_APP_URL}/audit/${params.slug}`,
+      description: Potential annual savings: $${audit.totalAnnualSavings}. See the full breakdown.,
+      url: ${process.env.NEXT_PUBLIC_APP_URL}/results/${slug},
     },
     twitter: {
       card: "summary_large_image",
       title,
-      description: `$${audit.totalAnnualSavings}/year in potential AI tool savings.`,
+      description: $${audit.totalAnnualSavings}/year in potential AI tool savings.,
     },
   };
 }
 
 export default async function ResultsPage({ params }: Props) {
-  const audit = await getAudit(params.slug);
+  const { slug } = await params;
+  const audit = await getAudit(slug);
   if (!audit) notFound();
 
   const showCredex = audit.totalMonthlySavings > 500;
@@ -61,7 +63,7 @@ export default async function ResultsPage({ params }: Props) {
         <AISummary summary={audit.summary} />
         <ToolBreakdown results={audit.results} />
         {showCredex && <CredexCTA monthlySavings={audit.totalMonthlySavings} />}
-        <LeadCapture slug={params.slug} monthlySavings={audit.totalMonthlySavings} />
+        <LeadCapture slug={slug} monthlySavings={audit.totalMonthlySavings} />
       </div>
     </main>
   );
