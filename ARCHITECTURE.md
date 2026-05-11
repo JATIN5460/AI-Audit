@@ -67,7 +67,6 @@ graph TD
    └── PII stripped (no email, no company name)
    └── OG + Twitter card meta tags for link previews
 ```
-
 ---
 
 ## Database Schema (Supabase)
