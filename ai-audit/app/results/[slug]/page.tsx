@@ -26,22 +26,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const audit = await getAudit(slug);
   if (!audit) return {};
 
-  const savings = audit.totalMonthlySavings;
-  const title = savings > 0
-    ? AI Spend Audit — $${savings}/mo savings found
-    : "AI Spend Audit — Your stack looks optimised";
+  const title =
+    audit.totalMonthlySavings > 0
+      ? `AI Spend Audit — $${audit.totalMonthlySavings}/mo savings found`
+      : "AI Spend Audit — Your stack looks optimised";
 
   return {
     title,
     openGraph: {
       title,
-      description: Potential annual savings: $${audit.totalAnnualSavings}. See the full breakdown.,
-      url: ${process.env.NEXT_PUBLIC_APP_URL}/results/${slug},
+      description: `Potential annual savings: $${audit.totalAnnualSavings}. See the full breakdown.`,
+      url: `${process.env.NEXT_PUBLIC_APP_URL}/results/${slug}`,
     },
     twitter: {
       card: "summary_large_image",
       title,
-      description: $${audit.totalAnnualSavings}/year in potential AI tool savings.,
+      description: `$${audit.totalAnnualSavings}/year in potential AI tool savings.`,
     },
   };
 }
@@ -62,8 +62,13 @@ export default async function ResultsPage({ params }: Props) {
         />
         <AISummary summary={audit.summary} />
         <ToolBreakdown results={audit.results} />
-        {showCredex && <CredexCTA monthlySavings={audit.totalMonthlySavings} />}
-        <LeadCapture slug={slug} monthlySavings={audit.totalMonthlySavings} />
+        {showCredex && (
+          <CredexCTA monthlySavings={audit.totalMonthlySavings} />
+        )}
+        <LeadCapture
+          slug={slug}
+          monthlySavings={audit.totalMonthlySavings}
+        />
       </div>
     </main>
   );
