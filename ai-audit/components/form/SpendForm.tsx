@@ -27,20 +27,24 @@ const defaultForm = (): AuditInput => ({
 
 export default function SpendForm() {
   const router = useRouter();
-  const [form, setForm] = useState<AuditInput>(defaultForm);
+  const [mounted, setMounted] = useState(false);
+  const [form, setForm] = useState<AuditInput>(defaultForm());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Load from localStorage
+  // Fix hydration — only run on client
   useEffect(() => {
+    setMounted(true);
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) setForm(JSON.parse(saved));
   }, []);
 
   // Persist to localStorage on change
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(form));
-  }, [form]);
+    if (mounted) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(form));
+    }
+  }, [form, mounted]);
 
   function updateTool(tool: ToolName, plan: string, seats: number, monthlySpend: number) {
     setForm((prev) => {
@@ -56,7 +60,10 @@ export default function SpendForm() {
   }
 
   function removeTool(tool: ToolName) {
-    setForm((prev) => ({ ...prev, tools: prev.tools.filter((t) => t.tool !== tool) }));
+    setForm((prev) => ({
+      ...prev,
+      tools: prev.tools.filter((t) => t.tool !== tool),
+    }));
   }
 
   async function handleSubmit() {
@@ -81,21 +88,29 @@ export default function SpendForm() {
     }
   }
 
+  if (!mounted) return null;
+
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-6">
       <div className="flex gap-4 flex-wrap">
         <div className="flex-1 min-w-[160px]">
-          <label className="block text-sm font-medium text-slate-700 mb-1">Team size</label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">
+            Team size
+          </label>
           <input
             type="number"
             min={1}
             value={form.teamSize}
-            onChange={(e) => setForm((p) => ({ ...p, teamSize: Number(e.target.value) }))}
+            onChange={(e) =>
+              setForm((p) => ({ ...p, teamSize: Number(e.target.value) }))
+            }
             className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
         </div>
         <div className="flex-1 min-w-[160px]">
-          <label className="block text-sm font-medium text-slate-700 mb-1">Primary use case</label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">
+            Primary use case
+          </label>
           <UseCaseSelect
             value={form.useCase}
             onChange={(v) => setForm((p) => ({ ...p, useCase: v }))}
@@ -104,7 +119,9 @@ export default function SpendForm() {
       </div>
 
       <div>
-        <h2 className="text-sm font-semibold text-slate-700 mb-3">Your AI tools</h2>
+        <h2 className="text-sm font-semibold text-slate-700 mb-3">
+          Your AI tools
+        </h2>
         <div className="space-y-3">
           {TOOLS.map((tool) => (
             <ToolRow

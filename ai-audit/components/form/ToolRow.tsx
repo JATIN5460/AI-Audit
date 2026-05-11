@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ToolName, ToolInput } from "@/lib/audit-engine/types";
 
 const TOOL_PLANS: Record<ToolName, string[]> = {
@@ -33,10 +33,23 @@ interface Props {
 }
 
 export default function ToolRow({ tool, existing, onUpdate, onRemove }: Props) {
-  const [enabled, setEnabled] = useState(!!existing);
-  const [plan, setPlan] = useState(existing?.plan ?? TOOL_PLANS[tool][0]);
-  const [seats, setSeats] = useState(existing?.seats ?? 1);
-  const [spend, setSpend] = useState(existing?.monthlySpend ?? 0);
+  const [mounted, setMounted] = useState(false);
+  const [enabled, setEnabled] = useState(false);
+  const [plan, setPlan] = useState(TOOL_PLANS[tool][0]);
+  const [seats, setSeats] = useState(1);
+  const [spend, setSpend] = useState(0);
+
+  useEffect(() => {
+    setMounted(true);
+    if (existing) {
+      setEnabled(true);
+      setPlan(existing.plan);
+      setSeats(existing.seats);
+      setSpend(existing.monthlySpend);
+    }
+  }, []);
+
+  if (!mounted) return null;
 
   function handleToggle() {
     if (enabled) {
